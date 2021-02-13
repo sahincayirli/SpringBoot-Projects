@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- development version, includes helpful console warnings -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <style>
+        li {
+            cursor: pointer;
+            padding: 10px;
+        }
+        li:hover {
+            color: blue;
+        }
+    </style>
+    <title>SpringBoot + Vue</title>
+</head>
+<body>
+
+
+    <div id="app">
+        <h1>Spring Tweets</h1>
+        <ul>
+            <li v-for="friend in friends" @click="showFriends(friend)">{{friend.name}}</li>
+        </ul>
+
+        <div class="details" v-show="showDetails">
+            <h2>Friend Details</h2>
+            <p>
+                <a href="" target="_blank">
+                </a>
+            </p>
+        </div>
+
+    </div>
+
+
+<script>
+    const apiURL = "http://localhost:8080/api/friends";
+    new Vue(
+        {
+            el:'#app',
+            data() {
+                return {
+                    friends: [],
+                    showDetails:false,
+                    selectedFriend: ''
+                }
+            },
+            created() {
+                fetch(apiURL)
+                .then(response => response.json())
+                .then(friends => this.friends = friends)
+            },
+            methods: {
+                showFriends(friend) {
+                    this.selectedFriend = friend;
+                    this.showDetails = true;
+                }
+            }
+        }
+    )
+
+</script>
+
+</body>
+</html>
