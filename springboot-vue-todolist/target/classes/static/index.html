@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <!-- development version, includes helpful console warnings -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+    <title>Todolist</title>
+</head>
+<body>
+
+    <div id="app">
+
+        <div class="container mt-3">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Title</th>
+                    <th scope="col">Description</th>
+                    <th scope="col">Done</th>
+                    <th scope="col">Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="todo,index in todolist">
+                    <th scope="row">{{index}}</th>
+                    <td>{{todo.title}}</td>
+                    <td>{{todo.description}}</td>
+                    <td>{{todo.done}}</td>
+                    <td>
+                        <button type="button" class="btn btn-danger" @click="removeTodo(todo.id)">Delete</button>
+                        <button type="button" class="btn btn-warning" @click="doTodo(todo.id)">Do</button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <button type="button" class="btn btn-success" @click="createTodo()">Add</button>
+
+            <div class="container mt-3">
+                <div class="createTodo" v-show="showCreateTodo">
+
+                    <div class="form-group">
+                        <label for="title">Title:</label>
+                        <input v-model="addedTodo.title" type="text" class="form-control" id="title">
+                    </div>
+                    <div class="form-group">
+                        <label for="desc">Description:</label>
+                        <input v-model="addedTodo.description" type="text" class="form-control" id="desc">
+                    </div>
+                    <div class="checkbox">
+                        <label><input v-model="addedTodo.done" type="checkbox" value=""> Done</label>
+                    </div>
+
+                    <button type="button" class="btn btn-success" @click="addTodo">Submit</button>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+<script>
+
+    const apiPrefix = "http://localhost:8080/todo";
+
+
+    new Vue(
+        {
+            el:'#app',
+            data() {
+                return {
+                    todolist: [],
+                    showCreateTodo:false,
+                    addedTodo: {
+                        title:'',
+                        description:'',
+                        done:false
+                    }
+                }
+            },
+            created() {
+                fetch(apiPrefix+"/all")
+                .then(response => response.json())
+                .then(todolist => this.todolist = todolist);
+            },
+            methods: {
+                removeTodo(id) {
+                    fetch(apiPrefix+`/${id}`, {method:'DELETE'});
+                    let index = 0;
+                    this.todolist.forEach((todo, i) => {
+                        if (todo.id === id) {
+                            index = i;
+                        }
+                    })
+
+                    this.todolist.splice(index,1);
+                },
+
+                addTodo() {
+
+                    fetch(apiPrefix, {
+                        method:'POST',
+                        body: JSON.stringify(this.addedTodo),
+                        headers: {"Content-type": "application/json"}
+                    })
+                    .then(response => response.json())
+                    .then(json => {
+                        console.table(json)
+                        this.todolist.push(json)
+                    });
+
+                },
+
+                createTodo() {
+                    this.showCreateTodo = !this.showCreateTodo;
+                },
+
+                doTodo(id) {
+
+                    fetch(apiPrefix + `/${id}`, {method: 'PUT'})
+                    .then(response => response.json())
+                    .then(json => {
+                        console.table(json);
+                    });
+
+                    this.todolist.find(todo => todo.id === id).done = true;
+
+                }
+
+                
+            }
+        }
+    )
+
+</script>
+
+</body>
+</html>
